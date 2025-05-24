@@ -3,10 +3,6 @@
 **Autora:** [Maria Egydio](https://github.com/mariaegydio)  
 **Stack:** Node.js + Express + OpenAI API + MongoDB  
 
-<p align="center">
-  <img src="https://via.placeholder.com/800x400.png?text=Gerador+de+Poemas+com+IA" alt="Capa do Projeto" width="600"/>
-</p>
-
 ## 📝 Descrição
 
 Um gerador inteligente de poemas e letras de música que utiliza inteligência artificial para criar composições únicas a partir de temas sugeridos pelos usuários. O sistema classifica automaticamente o sentimento de cada texto gerado e armazena todas as criações para consulta posterior.
