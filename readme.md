@@ -1,4 +1,4 @@
-# Gerador de Poemas com IA ✨
+# PoesIA ✨
 
 **Autora:** [Maria Egydio](https://github.com/mariaegydio)  
 **Stack:** Node.js + Express + OpenAI API + MongoDB  
