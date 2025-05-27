@@ -1,35 +1,63 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const path = require('path');
+const fs = require('fs'); // Para verificação do arquivo
 
-require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
+// 1. Configuração ABSOLUTA do .env
+const envPath = path.resolve(__dirname, '../.env');
 
+// Verificação EXTRA do arquivo .env
+if (!fs.existsSync(envPath)) {
+  console.error('❌ ERRO CRÍTICO: Arquivo .env não encontrado em:', envPath);
+  process.exit(1);
+}
+
+// Carrega as variáveis COM GARANTIA
+require('dotenv').config({ path: envPath });
+
+// 2. Verificação EXPLÍCITA das variáveis
+const requiredVars = ['OPENAI_API_KEY', 'MONGODB_URI'];
+requiredVars.forEach(varName => {
+  if (!process.env[varName]) {
+    console.error(`❌ Variável ${varName} ausente no .env`);
+    process.exit(1);
+  }
+});
+
+// 3. Inicialização do app
 const app = express();
 
-app.use(express.json());
-
+// 4. Conexão ROBUSTA com MongoDB
 mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('✅ MongoDB conectado ao banco:', mongoose.connection.name))
+  .then(() => console.log('✅ Conectado ao MongoDB'))
   .catch(err => {
-    console.error('❌ Erro na conexão com MongoDB:', err.message);
+    console.error('❌ Falha na conexão com MongoDB:', err.message);
     process.exit(1);
   });
 
-mongoose.connection.on('connected', () => {
-  console.log('✅ Conexão estabelecida com MongoDB');
-});
+// 5. Middlewares
+app.use(express.json());
 
-mongoose.connection.on('error', (err) => {
-  console.error('❌ Erro na conexão MongoDB:', err);
-});
-
+// 6. Rotas Básicas (TESTE)
 app.get('/', (req, res) => {
-  res.send('API Gerador de Poemas operacional!');
+  res.json({ 
+    status: 'online',
+    varsLoaded: {
+      openai: !!process.env.OPENAI_API_KEY,
+      mongo: !!process.env.MONGODB_URI
+    }
+  });
 });
 
+// 7. Inicialização do Servidor
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Servidor rodando na porta ${PORT}`);
-  console.log('OPENAI_KEY:', process.env.OPENAI_API_KEY ? '✔️ Configurada' : '❌ Ausente');
-  console.log('MONGODB_URI:', process.env.MONGODB_URI ? '✔️ Configurada' : '❌ Ausente');
+  console.log(`
+  ==================================
+  🚀 Servidor rodando na porta ${PORT}
+  📍 Endpoints:
+  - http://localhost:${PORT}
+  - http://localhost:${PORT}/api/poems
+  ==================================
+  `);
 });
