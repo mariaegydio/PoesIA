@@ -1,63 +1,41 @@
 const express = require('express');
 const mongoose = require('mongoose');
 const path = require('path');
-const fs = require('fs'); // Para verificação do arquivo
+const poemRoutes = require('./routes/poemRoutes');
 
-// 1. Configuração ABSOLUTA do .env
-const envPath = path.resolve(__dirname, '../.env');
+require('dotenv').config({ path: path.resolve(__dirname, '../.env') });
 
-// Verificação EXTRA do arquivo .env
-if (!fs.existsSync(envPath)) {
-  console.error('❌ ERRO CRÍTICO: Arquivo .env não encontrado em:', envPath);
+if (!process.env.OPENAI_API_KEY || !process.env.MONGODB_URI) {
+  console.error('❌ Variáveis ausentes no .env! Verifique OPENAI_API_KEY e MONGODB_URI');
   process.exit(1);
 }
 
-// Carrega as variáveis COM GARANTIA
-require('dotenv').config({ path: envPath });
-
-// 2. Verificação EXPLÍCITA das variáveis
-const requiredVars = ['OPENAI_API_KEY', 'MONGODB_URI'];
-requiredVars.forEach(varName => {
-  if (!process.env[varName]) {
-    console.error(`❌ Variável ${varName} ausente no .env`);
-    process.exit(1);
-  }
-});
-
-// 3. Inicialização do app
 const app = express();
 
-// 4. Conexão ROBUSTA com MongoDB
 mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('✅ Conectado ao MongoDB'))
+  .then(() => console.log('✅ MongoDB conectado'))
   .catch(err => {
-    console.error('❌ Falha na conexão com MongoDB:', err.message);
+    console.error('❌ Falha no MongoDB:', err.message);
     process.exit(1);
   });
 
-// 5. Middlewares
 app.use(express.json());
 
-// 6. Rotas Básicas (TESTE)
-app.get('/', (req, res) => {
-  res.json({ 
-    status: 'online',
-    varsLoaded: {
-      openai: !!process.env.OPENAI_API_KEY,
-      mongo: !!process.env.MONGODB_URI
-    }
-  });
-});
+app.use('/api/poems', poemRoutes);
 
-// 7. Inicialização do Servidor
+app.get('/', (req, res) => res.json({ 
+  status: 'online',
+  endpoints: {
+    generate: 'POST /api/poems/generate',
+    list: 'GET /api/poems'
+  }
+}));
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`
-  ==================================
-  🚀 Servidor rodando na porta ${PORT}
-  📍 Endpoints:
-  - http://localhost:${PORT}
-  - http://localhost:${PORT}/api/poems
-  ==================================
+==================================
+🚀 Servidor rodando na porta ${PORT}
+==================================
   `);
 });
